@@ -47,5 +47,10 @@ The paper is represented in json dict as below.
 
 papers = paper.get_papers("2024-04-03")
 
-response = send_chat_message(papers[0])
-print(response)
+for paper_dict in papers:
+    response = send_chat_message(paper_dict)
+    paper_dict['relevance'] = response.to_json()
+
+with jsonlines.open('data/2024-04-03.jsonl', mode='w') as writer:
+    for paper_dict in papers:
+        writer.write(paper_dict)
