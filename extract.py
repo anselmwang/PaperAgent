@@ -1,3 +1,4 @@
+import time
 import requests
 from bs4 import BeautifulSoup
 import json
@@ -18,23 +19,28 @@ def extract_paper_details(paper_div):
         "abstract": abstract
     }
 
-def get_kimi_content(url):
-    "fetch the content of the paper from the constructed URL"
+def get_kimi_content(url, retries=3, sleep_time=5):
+    "fetch the content of the paper from the constructed URL with retry and sleep"
 
-    # Extract the paper id from the input URL
-    paper_id = url.split('/')[-1]
+    for _ in range(retries):
+        try:
+            # Extract the paper id from the input URL
+            paper_id = url.split('/')[-1]
 
-    # Construct the new URL
-    new_url = f"https://papers.cool/arxiv/kimi?paper={paper_id}"
+            # Construct the new URL
+            new_url = f"https://papers.cool/arxiv/kimi?paper={paper_id}"
 
-    # Fetch the content of the new URL
-    response = requests.get(new_url)
+            # Fetch the content of the new URL
+            response = requests.get(new_url)
 
-    # Check if the request was successful
-    if response.status_code == 200:
-        return response.text
-    else:
-        return None
+            # Check if the request was successful
+            if response.status_code == 200:
+                return response.text
+        except Exception as e:
+            print(f"Error fetching Kimi content: {e}")
+            time.sleep(sleep_time)
+
+    return None
 
 # Load the HTML content
 html_path = 'Computer Vision and Pattern Recognition _ Cool Papers - Immersive Paper Discovery.html'
@@ -54,9 +60,13 @@ total_papers_text = soup.find('p', class_='info').get_text(strip=True)
 total_papers = int(re.search(r'Total: (\d+)', total_papers_text).group(1))
 
 
-# Extract all papers
+# Extract all papers and fetch Kimi content
 papers_divs = soup.find_all('div', class_='panel paper')
-papers = [extract_paper_details(paper_div) for paper_div in papers_divs]
+papers = []
+for paper_div in papers_divs:
+    paper = extract_paper_details(paper_div)
+    paper['kimi_html_response'] = get_kimi_content(paper['link'])
+    papers.append(paper)
 
 # Verify the number of extracted papers
 assert len(papers) == total_papers, f"Extracted papers ({len(papers)}) does not match total reported ({total_papers})"
