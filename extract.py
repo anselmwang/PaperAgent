@@ -4,6 +4,23 @@ import requests
 from bs4 import BeautifulSoup
 import re
 from datetime import datetime
+import os
+
+def dump_papers_to_jsonl(papers, filename):
+    "dump the papers object to a JSONL file in the DATA_FOLDER"
+
+    with open(f"{DATA_FOLDER}/{filename}", 'w', encoding='utf-8') as file:
+        for paper in papers:
+            json.dump(paper, file, ensure_ascii=False)
+            file.write('\n')
+def load_papers_from_jsonl(filename):
+    "load papers from a JSONL file in the DATA_FOLDER"
+
+    papers = []
+    with open(f"{DATA_FOLDER}/{filename}", 'r', encoding='utf-8') as file:
+        for line in file:
+            papers.append(json.loads(line.strip()))
+    return papers
 
 # Function to extract paper details
 def extract_paper_details(paper_div, date):
@@ -94,7 +111,9 @@ def extract_papers(date):
 
 DATE = '2024-04-03'
 DATA_FOLDER = 'data'
-import os
+
+if not os.path.exists(DATA_FOLDER):
+    os.makedirs(DATA_FOLDER)
 
 # Check if the file exists
 if os.path.exists(f"{DATA_FOLDER}/{DATE}.jsonl"):
@@ -107,18 +126,3 @@ else:
 
 paper = papers[0]
 print(paper)
-def dump_papers_to_jsonl(papers, filename):
-    "dump the papers object to a JSONL file in the DATA_FOLDER"
-
-    with open(f"{DATA_FOLDER}/{filename}", 'w', encoding='utf-8') as file:
-        for paper in papers:
-            json.dump(paper, file, ensure_ascii=False)
-            file.write('\n')
-def load_papers_from_jsonl(filename):
-    "load papers from a JSONL file in the DATA_FOLDER"
-
-    papers = []
-    with open(f"{DATA_FOLDER}/{filename}", 'r', encoding='utf-8') as file:
-        for line in file:
-            papers.append(json.loads(line.strip()))
-    return papers
