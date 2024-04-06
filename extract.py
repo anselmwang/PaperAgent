@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 import re
 from datetime import datetime
 import os
+import ebooklib.epub as epub
 
 def dump_papers_to_jsonl(papers, filename):
     "dump the papers object to a JSONL file in the DATA_FOLDER"
@@ -124,5 +125,49 @@ else:
     papers = extract_papers(DATE)
     dump_papers_to_jsonl(papers, f"{DATE}.jsonl")
 
-paper = papers[0]
-print(paper)
+# Create an epub file from the papers object
+create_epub(papers, f"{DATE}.epub")
+
+print(f"EPUB file created: {DATE}.epub")
+def create_epub(papers, filename):
+    "create an epub file from the papers object"
+
+    # Create a new epub book
+    book = epub.EpubBook()
+
+    # Set the book title and author
+    book.set_title('Arxiv Papers')
+    book.set_author('Arxiv')
+
+    # Create the first level TOC - date
+    date_chapter = epub.EpubHtml(title=papers[0]['date'], file_name='date.xhtml')
+    date_chapter.content = f"<h1>{papers[0]['date']}</h1>"
+    book.add_item(date_chapter)
+
+    # Create the second level TOC - papers
+    paper_chapters = []
+    for paper in papers:
+        paper_chapter = epub.EpubHtml(title=paper['title'], file_name=f"{paper['link'].split('/')[-1]}.xhtml")
+        paper_chapter.content = f"<h2>{paper['title']}</h2><p>Authors: {paper['authors']}</p><p>Abstract: {paper['abstract']}</p><p>Link: <a href='{paper['link']}'>{paper['link']}</a></p>"
+        book.add_item(paper_chapter)
+        paper_chapters.append(paper_chapter)
+
+    # Create the TOC
+    book.toc = (epub.Link('date.xhtml', papers[0]['date'], 'date'), (date_chapter, paper_chapters))
+
+    # Add default NCX and Nav files
+    book.add_item(epub.EpubNcx())
+    book.add_item(epub.EpubNav())
+
+    # Define CSS style
+    style = 'BODY {color: white;}'
+    nav_css = epub.EpubItem(uid="style_nav", file_name="style/nav.css", media_type="text/css", content=style)
+
+    # Add CSS file
+    book.add_item(nav_css)
+
+    # Create spine
+    book.spine = ['nav', date_chapter] + paper_chapters
+
+    # Write the epub file
+    epub.write_epub(filename, book, {})
