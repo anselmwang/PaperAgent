@@ -110,25 +110,6 @@ def extract_papers(date):
 
     return papers
 
-DATE = '2024-04-03'
-DATA_FOLDER = 'data'
-
-if not os.path.exists(DATA_FOLDER):
-    os.makedirs(DATA_FOLDER)
-
-# Check if the file exists
-if os.path.exists(f"{DATA_FOLDER}/{DATE}.jsonl"):
-    # Load papers from file
-    papers = load_papers_from_jsonl(f"{DATE}.jsonl")
-else:
-    # Extract papers and dump to file
-    papers = extract_papers(DATE)
-    dump_papers_to_jsonl(papers, f"{DATE}.jsonl")
-
-# Create an epub file from the papers object
-create_epub(papers, f"{DATE}.epub")
-
-print(f"EPUB file created: {DATE}.epub")
 def create_epub(papers, filename):
     "create an epub file from the papers object"
 
@@ -171,3 +152,23 @@ def create_epub(papers, filename):
 
     # Write the epub file
     epub.write_epub(filename, book, {})
+
+DATE = '2024-04-03'
+DATA_FOLDER = 'data'
+
+if not os.path.exists(DATA_FOLDER):
+    os.makedirs(DATA_FOLDER)
+
+# Check if the file exists
+if os.path.exists(f"{DATA_FOLDER}/{DATE}.jsonl"):
+    # Load papers from file
+    papers = load_papers_from_jsonl(f"{DATE}.jsonl")
+else:
+    # Extract papers and dump to file
+    papers = extract_papers(DATE)
+    dump_papers_to_jsonl(papers, f"{DATE}.jsonl")
+
+# Create an epub file from the papers object
+create_epub(papers, f"{DATE}.epub")
+
+print(f"EPUB file created: {DATE}.epub")
