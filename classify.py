@@ -2,8 +2,8 @@ import requests
 import json
 import copy
 import paper
-import jsonlines
 import dataclasses
+import jsonlines
 
 @dataclasses.dataclass
 class Response:
@@ -51,6 +51,6 @@ for paper_dict in papers:
     response = send_chat_message(paper_dict)
     paper_dict['relevance'] = response.to_json()
 
-with jsonlines.open('data/2024-04-03.jsonl', mode='w') as writer:
+with jsonlines.open('data/2024-04-03.classified.jsonl', mode='w') as writer:
     for paper_dict in papers:
         writer.write(paper_dict)
