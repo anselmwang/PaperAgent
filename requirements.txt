@@ -1,4 +1,6 @@
 BeautifulSoup4
 requests
 ebooklib
+jsonlines
+tqdm
 aider-chat

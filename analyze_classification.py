@@ -4,8 +4,12 @@ from paper import Response
 from paper import Response, Paper
 
 def load_classified_papers(filename):
+    papers = []
     with jsonlines.open(filename) as reader:
-        return [Paper(**{**paper, 'relevance': Response(**paper['relevance'])}) for paper in reader]
+        for paper in reader:
+            paper_obj = Paper(**{**paper, 'relevance': Response(**json.loads(paper['relevance']))})
+            papers.append(paper_obj)
+    return papers
 
 def count_papers_by_score(papers):
     score_counts = {score: 0 for score in range(11)}

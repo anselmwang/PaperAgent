@@ -5,7 +5,7 @@ import paper
 import dataclasses
 import jsonlines
 from tqdm import tqdm
-
+import json
 from paper import Paper, Response
 
 def send_chat_message(paper: dict):

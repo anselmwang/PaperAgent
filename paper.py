@@ -5,11 +5,15 @@ from bs4 import BeautifulSoup
 import re
 from datetime import datetime
 import os
-import ebooklib.epub as epub
 
-DATA_FOLDER = 'data'
+DATA_FOLDER = 'data/cool_papers_dump'
 import dataclasses
 
+
+@dataclasses.dataclass
+class Response:
+    score: int
+    short_reason: str
 @dataclasses.dataclass
 class Paper:
     date: str
@@ -18,6 +22,7 @@ class Paper:
     authors: str
     abstract: str
     kimi_html_response: str = None
+    relevance: Response = None
 
 def dump_papers_to_jsonl(papers, filename):
     "dump the papers object to a JSONL file in the DATA_FOLDER"
@@ -26,6 +31,7 @@ def dump_papers_to_jsonl(papers, filename):
         for paper_obj in papers:
             json.dump(dataclasses.asdict(paper_obj), file, ensure_ascii=False)
             file.write('\n')
+
 def load_papers_from_jsonl(filename):
     "load papers from a JSONL file in the DATA_FOLDER"
 
@@ -111,7 +117,7 @@ def extract_papers(date):
     for i, paper_div in enumerate(papers_divs):
         paper_obj = extract_paper_details(paper_div, date)
         paper_obj.kimi_html_response = get_kimi_content(paper_obj.link)
-        papers.append(paper)
+        papers.append(paper_obj)
         print(f"Extracted {i+1} of {total_papers} papers")
 
     # Verify the number of extracted papers
@@ -119,53 +125,8 @@ def extract_papers(date):
 
     return papers
 
-def create_epub(papers, filename):
-    "create an epub file from the papers object"
-
-    # Create a new epub book
-    book = epub.EpubBook()
-
-    # Set the book title and author
-    book.set_title('Arxiv Papers')
-    book.add_author('Arxiv')
-
-    # Create the first level TOC - date
-    date_chapter = epub.EpubHtml(title=papers[0]['date'], file_name='date.xhtml')
-    date_chapter.content = f"<h1>{papers[0]['date']}</h1>"
-    book.add_item(date_chapter)
-
-    # Create the second level TOC - papers
-    paper_chapters = []
-    for paper in papers:
-        paper_chapter = epub.EpubHtml(title=paper['title'], file_name=f"{paper['link'].split('/')[-1]}.xhtml")
-        paper_chapter.content = f"<h2>{paper.title}</h2><p>Authors: {paper.authors}</p><p>Abstract: {paper.abstract}</p><p>Link: <a href='{paper.link}'>{paper.link}</a></p><p>Kimi HTML Response: {paper.kimi_html_response}</p>"
-        book.add_item(paper_chapter)
-        paper_chapters.append(paper_chapter)
-
-    # Create the TOC
-    book.toc = [(date_chapter, paper_chapters)]
-
-    # Add default NCX and Nav files
-    book.add_item(epub.EpubNcx())
-    book.add_item(epub.EpubNav())
-
-    # Define CSS style
-    style = 'BODY {color: white;}'
-    nav_css = epub.EpubItem(uid="style_nav", file_name="style/nav.css", media_type="text/css", content=style)
-
-    # Add CSS file
-    book.add_item(nav_css)
-
-    # Create spine
-    book.spine = ['nav', date_chapter] + paper_chapters
-
-    # Write the epub file
-    epub.write_epub(filename, book, {})
-
-
 
 def get_papers(date):
-
     if not os.path.exists(DATA_FOLDER):
         os.makedirs(DATA_FOLDER)
 
@@ -179,9 +140,7 @@ def get_papers(date):
         dump_papers_to_jsonl(papers, f"{date}.jsonl")
     return papers
 
-# DATE = '2024-04-03'
-# papers = get_papers(DATE)
-# # Create an epub file from the papers object
-# create_epub(papers, f"{DATE}.epub")
+if __name__ == "__main__":
+    DATE = '2024-04-03'
+    papers = get_papers(DATE)
 
-# print(f"EPUB file created: {DATE}.epub")
