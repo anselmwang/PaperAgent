@@ -129,7 +129,7 @@ def create_epub(papers, filename):
     paper_chapters = []
     for paper in papers:
         paper_chapter = epub.EpubHtml(title=paper['title'], file_name=f"{paper['link'].split('/')[-1]}.xhtml")
-        paper_chapter.content = f"<h2>{paper['title']}</h2><p>Authors: {paper['authors']}</p><p>Abstract: {paper['abstract']}</p><p>Link: <a href='{paper['link']}'>{paper['link']}</a></p>"
+        paper_chapter.content = f"<h2>{paper['title']}</h2><p>Authors: {paper['authors']}</p><p>Abstract: {paper['abstract']}</p><p>Link: <a href='{paper['link']}'>{paper['link']}</a></p><p>Kimi HTML Response: {paper['kimi_html_response']}</p>"
         book.add_item(paper_chapter)
         paper_chapters.append(paper_chapter)
 
