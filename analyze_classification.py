@@ -18,8 +18,8 @@ def find_papers_with_score(papers, score):
 if __name__ == "__main__":
     classified_papers = load_classified_papers('data/2024-04-03.classified.jsonl')
     score_counts = count_papers_by_score(classified_papers)
-    for score in range(11):
-        print(f"Score {score}: {score_counts[score]} papers")
+    for score in range(10, -1, -1):
+        print(f"# Score {score}: {score_counts[score]} papers")
         papers_with_score = find_papers_with_score(classified_papers, score)
         for paper in papers_with_score:
             relevance = json.loads(paper['relevance'])

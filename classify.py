@@ -55,3 +55,4 @@ for paper_dict in tqdm(papers, desc="Classifying papers"):
 with jsonlines.open('data/2024-04-03.classified.jsonl', mode='w') as writer:
     for paper_dict in papers:
         writer.write(paper_dict)
+
