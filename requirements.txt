@@ -1,2 +1,4 @@
 BeautifulSoup4
+requests
+ebooklib
 aider-chat
