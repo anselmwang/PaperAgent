@@ -41,38 +41,39 @@ def get_kimi_content(url, retries=3, sleep_time=5):
 
     return None
 
-# Load the HTML content
-html_path = 'Computer Vision and Pattern Recognition _ Cool Papers - Immersive Paper Discovery.html'
-with open(html_path, 'r', encoding='utf-8') as file:
-    html_content = file.read()
+def extract_papers():
+    # Load the HTML content
+    html_path = 'Computer Vision and Pattern Recognition _ Cool Papers - Immersive Paper Discovery.html'
+    with open(html_path, 'r', encoding='utf-8') as file:
+        html_content = file.read()
 
-# Parse the HTML
-soup = BeautifulSoup(html_content, 'html.parser')
+    # Parse the HTML
+    soup = BeautifulSoup(html_content, 'html.parser')
 
-# Extract the date
-date_text = soup.find('p', class_='info').find('a', class_='date').get_text(strip=True)
-# Convert the date to the required format
-date = datetime.strptime(date_text, '%a, %d %b %Y').strftime('%Y-%m-%d')
+    # Extract the date
+    date_text = soup.find('p', class_='info').find('a', class_='date').get_text(strip=True)
+    # Convert the date to the required format
+    date = datetime.strptime(date_text, '%a, %d %b %Y').strftime('%Y-%m-%d')
 
-# Extract the total number of papers
-total_papers_text = soup.find('p', class_='info').get_text(strip=True)
-total_papers = int(re.search(r'Total: (\d+)', total_papers_text).group(1))
+    # Extract the total number of papers
+    total_papers_text = soup.find('p', class_='info').get_text(strip=True)
+    total_papers = int(re.search(r'Total: (\d+)', total_papers_text).group(1))
 
+    # Extract all papers and fetch Kimi content
+    papers_divs = soup.find_all('div', class_='panel paper')
+    papers = []
+    for i, paper_div in enumerate(papers_divs):
+        paper = extract_paper_details(paper_div)
+        paper['kimi_html_response'] = get_kimi_content(paper['link'])
+        papers.append(paper)
+        print(f"Extracted {i+1} of {total_papers} papers")
 
-# Extract all papers and fetch Kimi content
-papers_divs = soup.find_all('div', class_='panel paper')
-papers = []
-for paper_div in papers_divs:
-    paper = extract_paper_details(paper_div)
-    paper['kimi_html_response'] = get_kimi_content(paper['link'])
-    papers.append(paper)
+    # Verify the number of extracted papers
+    assert len(papers) == total_papers, f"Extracted papers ({len(papers)}) does not match total reported ({total_papers})"
 
-# Verify the number of extracted papers
-assert len(papers) == total_papers, f"Extracted papers ({len(papers)}) does not match total reported ({total_papers})"
+    return papers
 
-# print(papers[0])
-# print(papers[-1])
-
+papers = extract_papers()
 print("Fetching Kimi content for the first paper")
 # Fetch the content of the first paper
 paper = papers[0]
