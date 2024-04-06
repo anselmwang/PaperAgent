@@ -4,6 +4,7 @@ import copy
 import paper
 import dataclasses
 import jsonlines
+from tqdm import tqdm
 
 @dataclasses.dataclass
 class Response:
@@ -47,7 +48,7 @@ The paper is represented in json dict as below.
 
 papers = paper.get_papers("2024-04-03")
 
-for paper_dict in papers:
+for paper_dict in tqdm(papers, desc="Classifying papers"):
     response = send_chat_message(paper_dict)
     paper_dict['relevance'] = response.to_json()
 
