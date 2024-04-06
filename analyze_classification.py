@@ -1,10 +1,11 @@
 import jsonlines
 import json
 from paper import Response
+from paper import Response, Paper
 
 def load_classified_papers(filename):
     with jsonlines.open(filename) as reader:
-        return [paper for paper in reader]
+        return [Paper(**{**paper, 'relevance': Response(**paper['relevance'])}) for paper in reader]
 
 def count_papers_by_score(papers):
     score_counts = {score: 0 for score in range(11)}
@@ -22,4 +23,4 @@ if __name__ == "__main__":
         print(f"# Score {score}: {score_counts[score]} papers")
         papers_with_score = find_papers_with_score(classified_papers, score)
         for paper in papers_with_score:
-            print(f"Title: {paper.title}, Reason: {paper.relevance.short_reason}")
+            print(f"Title: {paper.title}, Reason: {paper.relevance.short_reason if paper.relevance else 'N/A'}")
