@@ -92,15 +92,11 @@ def extract_papers(date):
 
     return papers
 
-papers = extract_papers('2024-04-03')
-
-# Dump the papers object to a JSON file
-dump_papers_to_json(papers, 'papers.json')
+DATE = '2024-04-03'
+DATA_FOLDER = 'data'
+papers = extract_papers(DATE)
+with open(f'{DATE}.json', 'w', encoding='utf-8') as file:
+    json.dump(papers, file, ensure_ascii=False, indent=4)
 
 paper = papers[0]
 print(paper)
-def dump_papers_to_json(papers, filename):
-    "dump the papers object to a JSON file"
-
-    with open(filename, 'w', encoding='utf-8') as file:
-        json.dump(papers, file, ensure_ascii=False, indent=4)
