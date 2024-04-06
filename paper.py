@@ -48,7 +48,7 @@ def extract_paper_details(paper_div, date):
     link = paper_div.find('h2', class_='title').find('a', href=True)['href']
     authors = ' ; '.join([author.get_text(strip=True) for author in paper_div.find('p', class_='authors').find_all('span', class_='author')])
     abstract = paper_div.find('p', class_='summary').get_text(strip=True)
-    return {
+    return Paper(date=date, title=title, link=link, authors=authors, abstract=abstract)
         Paper(date=date, title=title, link=link, authors=authors, abstract=abstract)
     }
 
