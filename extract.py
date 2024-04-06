@@ -94,9 +94,31 @@ def extract_papers(date):
 
 DATE = '2024-04-03'
 DATA_FOLDER = 'data'
-papers = extract_papers(DATE)
-with open(f'{DATE}.json', 'w', encoding='utf-8') as file:
-    json.dump(papers, file, ensure_ascii=False, indent=4)
+import os
+
+# Check if the file exists
+if os.path.exists(f"{DATA_FOLDER}/{DATE}.jsonl"):
+    # Load papers from file
+    papers = load_papers_from_jsonl(f"{DATE}.jsonl")
+else:
+    # Extract papers and dump to file
+    papers = extract_papers(DATE)
+    dump_papers_to_jsonl(papers, f"{DATE}.jsonl")
 
 paper = papers[0]
 print(paper)
+def dump_papers_to_jsonl(papers, filename):
+    "dump the papers object to a JSONL file in the DATA_FOLDER"
+
+    with open(f"{DATA_FOLDER}/{filename}", 'w', encoding='utf-8') as file:
+        for paper in papers:
+            json.dump(paper, file, ensure_ascii=False)
+            file.write('\n')
+def load_papers_from_jsonl(filename):
+    "load papers from a JSONL file in the DATA_FOLDER"
+
+    papers = []
+    with open(f"{DATA_FOLDER}/{filename}", 'r', encoding='utf-8') as file:
+        for line in file:
+            papers.append(json.loads(line.strip()))
+    return papers
