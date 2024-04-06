@@ -1,5 +1,6 @@
 import jsonlines
 import json
+from paper import Response
 
 def load_classified_papers(filename):
     with jsonlines.open(filename) as reader:
@@ -22,4 +23,3 @@ if __name__ == "__main__":
         papers_with_score = find_papers_with_score(classified_papers, score)
         for paper in papers_with_score:
             print(f"Title: {paper.title}, Reason: {paper.relevance.short_reason}")
-from paper import Response
