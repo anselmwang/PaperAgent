@@ -41,10 +41,39 @@ def get_kimi_content(url, retries=3, sleep_time=5):
 
     return None
 
-def extract_papers(html_path):
-    # Load the HTML content
-    with open(html_path, 'r', encoding='utf-8') as file:
-        html_content = file.read()
+def extract_papers(date):
+    # Construct the URL
+    url = construct_url(date)
+
+    # Fetch the HTML content
+    html_content = fetch_html_content(url)
+    def construct_url(date):
+        "construct the URL from the given date"
+
+        return f"https://papers.cool/arxiv/cs.CV?date={date}?show=300"
+
+    def fetch_html_content(url, retries=3, sleep_time=5):
+        "fetch the HTML content from the constructed URL with retry and sleep"
+
+        for _ in range(retries):
+            try:
+                # Fetch the content of the URL
+                response = requests.get(url)
+
+                # Check if the request was successful
+                if response.status_code == 200:
+                    return response.text
+            except Exception as e:
+                print(f"Error fetching HTML content: {e}")
+                time.sleep(sleep_time)
+
+        return None
+
+    # Construct the URL
+    url = construct_url('2024-04-03')
+
+    # Fetch the HTML content
+    html_content = fetch_html_content(url)
 
     # Parse the HTML
     soup = BeautifulSoup(html_content, 'html.parser')
@@ -72,8 +101,7 @@ def extract_papers(html_path):
 
     return papers
 
-html_path = 'Computer Vision and Pattern Recognition _ Cool Papers - Immersive Paper Discovery.html'
-papers = extract_papers(html_path)
+papers = extract_papers('2024-04-03')
 print("Fetching Kimi content for the first paper")
 # Fetch the content of the first paper
 paper = papers[0]
