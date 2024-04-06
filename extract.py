@@ -134,7 +134,7 @@ def create_epub(papers, filename):
         paper_chapters.append(paper_chapter)
 
     # Create the TOC
-    book.toc = (epub.Link('date.xhtml', papers[0]['date'], 'date'), (date_chapter, paper_chapters))
+    book.toc = (date_chapter, paper_chapters)
 
     # Add default NCX and Nav files
     book.add_item(epub.EpubNcx())
