@@ -118,7 +118,7 @@ def create_epub(papers, filename):
 
     # Set the book title and author
     book.set_title('Arxiv Papers')
-    book.set_author('Arxiv')
+    book.add_author('Arxiv')
 
     # Create the first level TOC - date
     date_chapter = epub.EpubHtml(title=papers[0]['date'], file_name='date.xhtml')
