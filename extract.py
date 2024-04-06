@@ -5,7 +5,7 @@ import re
 from datetime import datetime
 
 # Function to extract paper details
-def extract_paper_details(paper_div):
+def extract_paper_details(paper_div, date):
     title = paper_div.find('h2', class_='title').find('a', class_='title-link').get_text(strip=True)
     link = paper_div.find('h2', class_='title').find('a', href=True)['href']
     authors = ' ; '.join([author.get_text(strip=True) for author in paper_div.find('p', class_='authors').find_all('span', class_='author')])
@@ -41,9 +41,8 @@ def get_kimi_content(url, retries=3, sleep_time=5):
 
     return None
 
-def extract_papers():
+def extract_papers(html_path):
     # Load the HTML content
-    html_path = 'Computer Vision and Pattern Recognition _ Cool Papers - Immersive Paper Discovery.html'
     with open(html_path, 'r', encoding='utf-8') as file:
         html_content = file.read()
 
@@ -63,7 +62,7 @@ def extract_papers():
     papers_divs = soup.find_all('div', class_='panel paper')
     papers = []
     for i, paper_div in enumerate(papers_divs):
-        paper = extract_paper_details(paper_div)
+        paper = extract_paper_details(paper_div, date)
         paper['kimi_html_response'] = get_kimi_content(paper['link'])
         papers.append(paper)
         print(f"Extracted {i+1} of {total_papers} papers")
@@ -73,7 +72,8 @@ def extract_papers():
 
     return papers
 
-papers = extract_papers()
+html_path = 'Computer Vision and Pattern Recognition _ Cool Papers - Immersive Paper Discovery.html'
+papers = extract_papers(html_path)
 print("Fetching Kimi content for the first paper")
 # Fetch the content of the first paper
 paper = papers[0]
