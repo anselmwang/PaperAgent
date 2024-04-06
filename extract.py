@@ -41,36 +41,26 @@ def get_kimi_content(url, retries=3, sleep_time=5):
 
     return None
 
+def fetch_html_content(url, retries=3, sleep_time=5):
+    "fetch the HTML content from the constructed URL with retry and sleep"
+
+    for _ in range(retries):
+        try:
+            # Fetch the content of the URL
+            response = requests.get(url)
+
+            # Check if the request was successful
+            if response.status_code == 200:
+                return response.text
+        except Exception as e:
+            print(f"Error fetching HTML content: {e}")
+            time.sleep(sleep_time)
+
+    return None
+
 def extract_papers(date):
     # Construct the URL
-    url = construct_url(date)
-
-    # Fetch the HTML content
-    html_content = fetch_html_content(url)
-    def construct_url(date):
-        "construct the URL from the given date"
-
-        return f"https://papers.cool/arxiv/cs.CV?date={date}?show=300"
-
-    def fetch_html_content(url, retries=3, sleep_time=5):
-        "fetch the HTML content from the constructed URL with retry and sleep"
-
-        for _ in range(retries):
-            try:
-                # Fetch the content of the URL
-                response = requests.get(url)
-
-                # Check if the request was successful
-                if response.status_code == 200:
-                    return response.text
-            except Exception as e:
-                print(f"Error fetching HTML content: {e}")
-                time.sleep(sleep_time)
-
-        return None
-
-    # Construct the URL
-    url = construct_url('2024-04-03')
+    url = f"https://papers.cool/arxiv/cs.CV?date={date}&show=300"
 
     # Fetch the HTML content
     html_content = fetch_html_content(url)
@@ -102,9 +92,5 @@ def extract_papers(date):
     return papers
 
 papers = extract_papers('2024-04-03')
-print("Fetching Kimi content for the first paper")
-# Fetch the content of the first paper
 paper = papers[0]
-url = paper['link']
-kimi_content = get_kimi_content(url)
-print(kimi_content)
+print(paper)
