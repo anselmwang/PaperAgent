@@ -1,3 +1,4 @@
+import requests
 from bs4 import BeautifulSoup
 import json
 import re
@@ -43,3 +44,20 @@ assert len(papers) == total_papers, f"Extracted papers ({len(papers)}) does not 
 
 print(papers[0])
 print(papers[-1])
+def get_paper_content(url):
+    "fetch the content of the paper from the constructed URL"
+
+    # Extract the paper id from the input URL
+    paper_id = url.split('/')[-1]
+
+    # Construct the new URL
+    new_url = f"https://papers.cool/arxiv/kimi?paper={paper_id}"
+
+    # Fetch the content of the new URL
+    response = requests.get(new_url)
+
+    # Check if the request was successful
+    if response.status_code == 200:
+        return response.text
+    else:
+        return None
