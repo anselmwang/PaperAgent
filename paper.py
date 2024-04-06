@@ -7,6 +7,7 @@ from datetime import datetime
 import os
 import ebooklib.epub as epub
 
+DATA_FOLDER = 'data'
 def dump_papers_to_jsonl(papers, filename):
     "dump the papers object to a JSONL file in the DATA_FOLDER"
 
@@ -153,22 +154,26 @@ def create_epub(papers, filename):
     # Write the epub file
     epub.write_epub(filename, book, {})
 
-DATE = '2024-04-03'
-DATA_FOLDER = 'data'
 
-if not os.path.exists(DATA_FOLDER):
-    os.makedirs(DATA_FOLDER)
 
-# Check if the file exists
-if os.path.exists(f"{DATA_FOLDER}/{DATE}.jsonl"):
-    # Load papers from file
-    papers = load_papers_from_jsonl(f"{DATE}.jsonl")
-else:
-    # Extract papers and dump to file
-    papers = extract_papers(DATE)
-    dump_papers_to_jsonl(papers, f"{DATE}.jsonl")
+def get_papers(date):
 
-# Create an epub file from the papers object
-create_epub(papers, f"{DATE}.epub")
+    if not os.path.exists(DATA_FOLDER):
+        os.makedirs(DATA_FOLDER)
 
-print(f"EPUB file created: {DATE}.epub")
+    # Check if the file exists
+    if os.path.exists(f"{DATA_FOLDER}/{date}.jsonl"):
+        # Load papers from file
+        papers = load_papers_from_jsonl(f"{date}.jsonl")
+    else:
+        # Extract papers and dump to file
+        papers = extract_papers(date)
+        dump_papers_to_jsonl(papers, f"{date}.jsonl")
+    return papers
+
+# DATE = '2024-04-03'
+# papers = get_papers(DATE)
+# # Create an epub file from the papers object
+# create_epub(papers, f"{DATE}.epub")
+
+# print(f"EPUB file created: {DATE}.epub")
