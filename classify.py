@@ -2,6 +2,7 @@ import requests
 import json
 import copy
 import paper
+import jsonlines
 import dataclasses
 
 @dataclasses.dataclass
