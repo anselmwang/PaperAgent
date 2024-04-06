@@ -1,4 +1,5 @@
 import jsonlines
+import json
 
 def load_classified_papers(filename):
     with jsonlines.open(filename) as reader:
@@ -9,6 +10,7 @@ def find_papers_with_score(papers, score):
 
 if __name__ == "__main__":
     classified_papers = load_classified_papers('data/2024-04-03.classified.jsonl')
-    papers_with_score_5 = find_papers_with_score(classified_papers, 5)
+    papers_with_score_5 = find_papers_with_score(classified_papers, 10)
     for paper in papers_with_score_5:
+        del paper["kimi_html_response"]
         print(paper)
