@@ -52,6 +52,7 @@ def main(task_name, start_date, end_date):
 
     # Sort dates in ascending order
     sorted_dates = sorted(all_paper_dict.keys())
+    toc_list = []
     for date in sorted_dates:
         # Create a section for the date
         date_section = epub.EpubHtml(title=date, file_name=f'{date}.xhtml', lang='en')
@@ -68,12 +69,14 @@ def main(task_name, start_date, end_date):
             score_groups[score].append(paper)
 
         # Sort scores in descending order and create a TOC entry for each score
-        date_toc = []
+        score_list = []
         for score in sorted(score_groups.keys(), reverse=True):
-            score_section = epub.Section(f'Score: {score}')
-            score_toc = []
+            score_section = epub.EpubHtml(title=f'Score: {score}', file_name=f'{date}_score_{score}.xhtml', lang='en')
+            score_section.content = f'<h2>Score: {score}</h2>'
+            book.add_item(score_section)
 
             # Sort papers by title for each score
+            paper_list = []
             for paper_index, paper in enumerate(sorted(score_groups[score], key=lambda p: p.title)):
                 # Create a chapter for each paper
                 sanitized_title = re.sub(r'[^\w\s-]', '', paper.title).replace(' ', '_')
@@ -87,8 +90,9 @@ def main(task_name, start_date, end_date):
                 chapter.content += f'<p>Abstract: {paper.abstract}</p>'
                 book.add_item(chapter)
                 book.spine.append(chapter)
-                score_toc.append(epub.Link(chapter_file_name, paper.title, f'score_{score}_{sanitized_title}_{paper_index}'))
-            date_toc.append((score_section, tuple(score_toc)))
+                paper_list.append(chapter)
+            score_list.append((score_section, tuple(paper_list)))
+        toc_list.append((date_section, tuple(score_list)))
         book.toc.append((epub.Link(f'{date}.xhtml', date, f'date_{date}'), tuple(date_toc)))
 
     # Define CSS style
@@ -97,9 +101,13 @@ def main(task_name, start_date, end_date):
     book.add_item(nav_css)
 
     # Add navigation files
+    book.spine = ['nav'] + book.spine
     book.spine = ['nav'] + sorted_dates
     book.add_item(epub.EpubNcx())
     book.add_item(epub.EpubNav())
+
+    # Set the TOC
+    book.toc = toc_list
 
     # Write the EPUB file
     epub.write_epub('papers.epub', book, {})
