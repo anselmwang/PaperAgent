@@ -52,6 +52,10 @@ The paper is represented in json dict as below.
 
 def classify_papers(task, date):
     matcher = Matcher(task)
+    task_folder_path = f'data/tasks/{task}'
+    if not os.path.exists(task_folder_path):
+        os.makedirs(task_folder_path)
+    classified_papers_path = f'{task_folder_path}/{date}.jsonl'
     classified_papers_path = f'data/tasks/{task}/{date}.jsonl'
     if os.path.exists(classified_papers_path):
         with jsonlines.open(classified_papers_path, mode='r') as reader:
