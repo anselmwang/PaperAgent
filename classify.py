@@ -8,25 +8,34 @@ from tqdm import tqdm
 import json
 from paper import Paper, Response
 
-def send_chat_message(paper: dict):
-    paper_copy = copy.copy(paper)
-    assert paper_copy.kimi_html_response is not None, "kimi_html_response key not found in paper"
-    paper_dict = dataclasses.asdict(paper_copy)
-    del paper_dict["kimi_html_response"]
 
-    TEMPLATE = """Determine if the paper focuses on training Multimodal Large Language Models (LLMs). OUTPUT in below JSON format:
-```
-{"score": score, "short_reason": short_reason}
-```
+
+class Matcher:
+
+    TEMPLATE = """Determine how relevant the paper is. OUTPUT in JSON format: `{"score": score, "short_reason": short_reason}`.
 `score` is an integer between 0 and 10 to decide the relevance. 0 to be completely non-relevant, 10 to be perfectly relevant. `short_reason` is a short explanation.
-- only work related to vision, video, and image processing is relevant. Work discussing other modalities like speech is considered score 0
-- Only work related to Multimodal LLM application is relevant, multimodal LLM application is considered score 0
+
+A paper is relevant only when it matches the following criteria simultaneously:
+%(criteria)s
 
 The paper is represented in json dict as below. 
 ```
-%s
+%(paper)s
 ```
 """
+
+    def __init__(self, criteria: str):
+        pass
+
+    def match(self, paper: Paper):
+        paper_copy = copy.copy(paper)
+        assert paper_copy.kimi_html_response is not None, "kimi_html_response key not found in paper"
+        paper_dict = dataclasses.asdict(paper_copy)
+        del paper_dict["kimi_html_response"]
+
+def send_chat_message(paper: dict):
+
+
     message = TEMPLATE % json.dumps(paper)
 
     url = 'http://localhost:11434/api/chat'
