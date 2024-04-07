@@ -56,6 +56,7 @@ def main(task_name, start_date, end_date):
         date_section = epub.EpubHtml(title=date, file_name=f'{date}.xhtml', lang='en')
         date_section.content = f'<h1>Papers for {date}</h1>'
         book.add_item(date_section)
+        book.spine.append(date_section)
 
         # Group papers by score
         score_groups = {}
@@ -66,9 +67,10 @@ def main(task_name, start_date, end_date):
             score_groups[score].append(paper)
 
         # Sort scores in descending order and create a TOC entry for each score
+        date_toc = []
         for score in sorted(score_groups.keys(), reverse=True):
             score_section = epub.Section(f'Score: {score}')
-            book.toc.append((epub.Section(date), score_section))
+            score_toc = []
 
             # Sort papers by title for each score
             for paper in sorted(score_groups[score], key=lambda p: p.title):
@@ -81,7 +83,10 @@ def main(task_name, start_date, end_date):
                 chapter.content += f'<div>{BeautifulSoup(paper.kimi_html_response, "html.parser").prettify()}</div>'
                 chapter.content += f'<p>Abstract: {paper.abstract}</p>'
                 book.add_item(chapter)
-                book.toc.append((score_section, (chapter,)))
+                book.spine.append(chapter)
+                score_toc.append(epub.Link(f'{paper.title}.xhtml', paper.title, f'score_{score}_{paper.title}'))
+            date_toc.append((score_section, tuple(score_toc)))
+        book.toc.append((epub.Link(f'{date}.xhtml', date, f'date_{date}'), tuple(date_toc)))
 
     # Define CSS style
     style = 'BODY {color: white;}'
