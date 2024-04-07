@@ -29,22 +29,20 @@ def retrieve_papers(task, date):
     
     return papers
 
-def main(task_name):
+def main(task_name, start_date, end_date):
     current_date = start_date
 
-    all_papers = []
+    all_paper_dict = {}
     while current_date <= end_date:
         date_str = current_date.strftime('%Y-%m-%d')
         papers = retrieve_papers(task_name, date_str)
-        all_papers.extend(papers)
+        all_paper_dict[date_str] = papers
         current_date += datetime.timedelta(days=1)
-    
-    print(f"Total papers classified: {len(all_papers)}")
+
 
 if __name__ == "__main__":
-if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Augment paper objects with relevance field.')
-    parser.add_argument('task_name', type=str, help='Name of the task for relevance augmentation.')
+    parser.add_argument('--task_name', type=str, default="mllm_training", help='Name of the task for relevance augmentation.')
     parser.add_argument('--days', type=int, help='Number of days to scrape.', required=False)
     args = parser.parse_args()
     if args.days:
@@ -53,7 +51,5 @@ if __name__ == "__main__":
     else:
         start_date = datetime.date(2024, 1, 1)
         end_date = datetime.date.today() - datetime.timedelta(days=2)
-    parser = argparse.ArgumentParser(description='Augment paper objects with relevance field.')
-    parser.add_argument('task_name', type=str, help='Name of the task for relevance augmentation.')
-    args = parser.parse_args()
-    main(args.task_name)
+
+    main(args.task_name, start_date, end_date)
