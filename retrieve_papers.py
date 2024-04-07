@@ -5,6 +5,9 @@ import os
 import paper
 import dataclasses
 import jsonlines
+import ebooklib
+from ebooklib import epub
+from bs4 import BeautifulSoup
 from tqdm import tqdm
 from paper import Paper, Response
 
@@ -38,6 +41,49 @@ def main(task_name, start_date, end_date):
         papers = retrieve_papers(task_name, date_str)
         all_paper_dict[date_str] = papers
         current_date += datetime.timedelta(days=1)
+
+    # Generate EPUB
+    book = epub.EpubBook()
+    book.set_identifier('id123456')
+    book.set_title('Paper Collection')
+    book.set_language('en')
+    book.add_author('Paper Repository')
+
+    # Sort dates in ascending order
+    sorted_dates = sorted(all_paper_dict.keys())
+    for date in sorted_dates:
+        # Create a section for the date
+        date_section = epub.EpubHtml(title=date, file_name=f'{date}.xhtml', lang='en')
+        date_section.content = f'<h1>Papers for {date}</h1>'
+        book.add_item(date_section)
+
+        # Sort papers by score in descending order
+        papers = sorted(all_paper_dict[date], key=lambda p: p.relevance.score, reverse=True)
+        for paper in papers:
+            # Create a chapter for each paper
+            chapter = epub.EpubHtml(title=paper.title, file_name=f'{paper.title}.xhtml', lang='en')
+            chapter.content = f'<h2><a href="{paper.link}">{paper.title}</a></h2>'
+            chapter.content += f'<p>Authors: {paper.authors}</p>'
+            chapter.content += f'<p>Score: {paper.relevance.score}</p>'
+            chapter.content += f'<p>Reason: {paper.relevance.short_reason}</p>'
+            chapter.content += f'<div>{BeautifulSoup(paper.kimi_html_response, "html.parser").prettify()}</div>'
+            chapter.content += f'<p>Abstract: {paper.abstract}</p>'
+            book.add_item(chapter)
+            book.toc.append((epub.Section(date), (chapter,)))
+
+    # Define CSS style
+    style = 'BODY {color: white;}'
+    nav_css = epub.EpubItem(uid="style_nav", file_name="style/nav.css", media_type="text/css", content=style)
+    book.add_item(nav_css)
+
+    # Add navigation files
+    book.spine = ['nav'] + sorted_dates
+    book.add_item(epub.EpubNcx())
+    book.add_item(epub.EpubNav())
+
+    # Write the EPUB file
+    epub.write_epub('papers.epub', book, {})
+
 
 
 if __name__ == "__main__":
