@@ -51,15 +51,20 @@ The paper is represented in json dict as below.
 
 def classify_papers(task, date):
     matcher = Matcher(task)
-    papers = paper.get_papers(date)
+    classified_papers_path = f'data/tasks/{task}/{date}.classified.jsonl'
+    if os.path.exists(classified_papers_path):
+        with jsonlines.open(classified_papers_path, mode='r') as reader:
+            papers = [Paper(**{**obj, 'relevance': Response(**obj['relevance'])}) for obj in reader]
+    else:
+        papers = paper.get_papers(date)
+        for paper_obj in tqdm(papers, desc="Classifying papers"):
+            response = matcher.match(paper_obj)
+            paper_obj.relevance = response
+        with jsonlines.open(classified_papers_path, mode='w') as writer:
+            for paper_obj in papers:
+                writer.write(dataclasses.asdict(paper_obj))
 
-    for paper_obj in tqdm(papers, desc="Classifying papers"):
-        response = matcher.match(paper_obj)
-        paper_obj.relevance = response
 
-    with jsonlines.open(f'data/tasks/{task}/{date}.jsonl', mode='w') as writer:
-        for paper_obj in papers:
-            writer.write(dataclasses.asdict(paper_obj))
     
     return papers
 
