@@ -57,19 +57,31 @@ def main(task_name, start_date, end_date):
         date_section.content = f'<h1>Papers for {date}</h1>'
         book.add_item(date_section)
 
-        # Sort papers by score in descending order
-        papers = sorted(all_paper_dict[date], key=lambda p: p.relevance.score, reverse=True)
-        for paper in papers:
-            # Create a chapter for each paper
-            chapter = epub.EpubHtml(title=paper.title, file_name=f'{paper.title}.xhtml', lang='en')
-            chapter.content = f'<h2><a href="{paper.link}">{paper.title}</a></h2>'
-            chapter.content += f'<p>Authors: {paper.authors}</p>'
-            chapter.content += f'<p>Score: {paper.relevance.score}</p>'
-            chapter.content += f'<p>Reason: {paper.relevance.short_reason}</p>'
-            chapter.content += f'<div>{BeautifulSoup(paper.kimi_html_response, "html.parser").prettify()}</div>'
-            chapter.content += f'<p>Abstract: {paper.abstract}</p>'
-            book.add_item(chapter)
-            book.toc.append((epub.Section(date), (chapter,)))
+        # Group papers by score
+        score_groups = {}
+        for paper in all_paper_dict[date]:
+            score = paper.relevance.score
+            if score not in score_groups:
+                score_groups[score] = []
+            score_groups[score].append(paper)
+
+        # Sort scores in descending order and create a TOC entry for each score
+        for score in sorted(score_groups.keys(), reverse=True):
+            score_section = epub.Section(f'Score: {score}')
+            book.toc.append((epub.Section(date), score_section))
+
+            # Sort papers by title for each score
+            for paper in sorted(score_groups[score], key=lambda p: p.title):
+                # Create a chapter for each paper
+                chapter = epub.EpubHtml(title=paper.title, file_name=f'{paper.title}.xhtml', lang='en')
+                chapter.content = f'<h2><a href="{paper.link}">{paper.title}</a></h2>'
+                chapter.content += f'<p>Authors: {paper.authors}</p>'
+                chapter.content += f'<p>Score: {paper.relevance.score}</p>'
+                chapter.content += f'<p>Reason: {paper.relevance.short_reason}</p>'
+                chapter.content += f'<div>{BeautifulSoup(paper.kimi_html_response, "html.parser").prettify()}</div>'
+                chapter.content += f'<p>Abstract: {paper.abstract}</p>'
+                book.add_item(chapter)
+                book.toc.append((score_section, (chapter,)))
 
     # Define CSS style
     style = 'BODY {color: white;}'
