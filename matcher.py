@@ -1,3 +1,4 @@
+import time
 import requests
 import dataclasses
 import copy
@@ -49,7 +50,8 @@ The paper is represented in json dict as below.
                 break  # Exit the loop if the request was successful and the response was properly decoded
             except (requests.exceptions.RequestException, json.JSONDecodeError) as e:
                 if attempt < 2:  # Only sleep and retry if we are not on the last attempt
-                    time.sleep(2 ** attempt)  # Exponential backoff
+                    # local endpoint, doesn't need exponential backoff
+                    time.sleep(1)
                 else:
                     raise  # Re-raise the exception if all attempts fail
         return Response(score=response_data['score'], short_reason=response_data['short_reason'])
