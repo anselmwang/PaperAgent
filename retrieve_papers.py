@@ -42,14 +42,17 @@ def main(task_name):
     print(f"Total papers classified: {len(all_papers)}")
 
 if __name__ == "__main__":
-    # task = "mllm_training"
-    # date = "2024-04-03"
-    # papers = retrieve_papers(task, date)
-    # print(papers[0])
-
-    START_DATE = datetime.date(2024, 1, 1)
-    # minus 2 days to ensure all papers have been online
-    END_DATE = datetime.date.today() - datetime.timedelta(days=2)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Augment paper objects with relevance field.')
+    parser.add_argument('task_name', type=str, help='Name of the task for relevance augmentation.')
+    parser.add_argument('--days', type=int, help='Number of days to scrape.', required=False)
+    args = parser.parse_args()
+    if args.days:
+        end_date = datetime.date.today() - datetime.timedelta(days=2)
+        start_date = end_date - datetime.timedelta(days=args.days - 1)
+    else:
+        start_date = datetime.date(2024, 1, 1)
+        end_date = datetime.date.today() - datetime.timedelta(days=2)
     parser = argparse.ArgumentParser(description='Augment paper objects with relevance field.')
     parser.add_argument('task_name', type=str, help='Name of the task for relevance augmentation.')
     args = parser.parse_args()
