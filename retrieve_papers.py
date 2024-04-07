@@ -43,22 +43,20 @@ def main(task_name, start_date, end_date):
         all_paper_dict[date_str] = papers
         current_date += datetime.timedelta(days=1)
 
-    # Generate EPUB
     book = epub.EpubBook()
-    book.set_identifier('id123456')
-    book.set_title('Paper Collection')
-    book.set_language('en')
-    book.add_author('Paper Repository')
+    book.set_title('Arxiv Papers')
+    book.add_author('Arxiv')
+
+    # Initialize an empty TOC and spine
+    book_toc = []
+    book_spine = ['nav']
 
     # Sort dates in ascending order
     sorted_dates = sorted(all_paper_dict.keys())
-    toc_list = []
     for date in sorted_dates:
-        # Create a section for the date
-        date_section = epub.EpubHtml(title=date, file_name=f'{date}.xhtml', lang='en')
-        date_section.content = f'<h1>Papers for {date}</h1>'
-        book.add_item(date_section)
-        book.spine.append(date_section)
+        date_chapter = epub.EpubHtml(title=date, file_name=f"{date}.xhtml", content=f"<h1>{date}</h1>")
+        book.add_item(date_chapter)
+        book_spine.append(date_chapter)
 
         # Group papers by score
         score_groups = {}
@@ -68,46 +66,37 @@ def main(task_name, start_date, end_date):
                 score_groups[score] = []
             score_groups[score].append(paper)
 
-        # Sort scores in descending order and create a TOC entry for each score
-        score_list = []
+        score_chapters = []
         for score in sorted(score_groups.keys(), reverse=True):
-            score_section = epub.EpubHtml(title=f'Score: {score}', file_name=f'{date}_score_{score}.xhtml', lang='en')
-            score_section.content = f'<h2>Score: {score}</h2>'
-            book.add_item(score_section)
+            score_chapter = epub.EpubHtml(title=f'Score: {score}', file_name=f'{date}_score_{score}.xhtml', lang='en')
+            score_chapter.content = f'<h2>Score: {score}</h2>'
+            book.add_item(score_chapter)
+            book_spine.append(score_chapter)
 
-            # Sort papers by title for each score
-            paper_list = []
-            for paper_index, paper in enumerate(sorted(score_groups[score], key=lambda p: p.title)):
+            title_chapters = []
+            for paper_index, paper in enumerate(score_groups[score]):
                 # Create a chapter for each paper
                 sanitized_title = re.sub(r'[^\w\s-]', '', paper.title).replace(' ', '_')
                 chapter_file_name = f'{date}_{score}_{sanitized_title}_{paper_index}.xhtml'
-                chapter = epub.EpubHtml(title=paper.title, file_name=chapter_file_name, lang='en')
-                chapter.content = f'<h2><a href="{paper.link}">{paper.title}</a></h2>'
-                chapter.content += f'<p>Authors: {paper.authors}</p>'
-                chapter.content += f'<p>Score: {paper.relevance.score}</p>'
-                chapter.content += f'<p>Reason: {paper.relevance.short_reason}</p>'
-                chapter.content += f'<div>{BeautifulSoup(paper.kimi_html_response, "html.parser").prettify()}</div>'
-                chapter.content += f'<p>Abstract: {paper.abstract}</p>'
-                book.add_item(chapter)
-                book.spine.append(chapter)
-                paper_list.append(chapter)
-            score_list.append((score_section, tuple(paper_list)))
-        toc_list.append((date_section, tuple(score_list)))
-        book.toc.append((epub.Link(f'{date}.xhtml', date, f'date_{date}'), tuple(date_toc)))
+                paper_chapter = epub.EpubHtml(title=paper.title, file_name=chapter_file_name, lang='en')
+                paper_chapter.content = f'<h2><a href="{paper.link}">{paper.title}</a></h2>'
+                paper_chapter.content += f'<p>Authors: {paper.authors}</p>'
+                paper_chapter.content += f'<p>Score: {paper.relevance.score}</p>'
+                paper_chapter.content += f'<p>Reason: {paper.relevance.short_reason}</p>'
+                paper_chapter.content += f'<div>{BeautifulSoup(paper.kimi_html_response, "html.parser").prettify()}</div>'
+                paper_chapter.content += f'<p>Abstract: {paper.abstract}</p>'
+                book.add_item(paper_chapter)
+                book_spine.append(paper_chapter)
+                title_chapters.append(paper_chapter)
 
-    # Define CSS style
-    style = 'BODY {color: white;}'
-    nav_css = epub.EpubItem(uid="style_nav", file_name="style/nav.css", media_type="text/css", content=style)
-    book.add_item(nav_css)
+            score_chapters.append((score_chapter, title_chapters))
+        book_toc.append((date_chapter, score_chapters))
 
-    # Add navigation files
-    book.spine = ['nav'] + book.spine
-    book.spine = ['nav'] + sorted_dates
+    book.toc = book_toc
+    book.spine = book_spine
+
     book.add_item(epub.EpubNcx())
     book.add_item(epub.EpubNav())
-
-    # Set the TOC
-    book.toc = toc_list
 
     # Write the EPUB file
     epub.write_epub('papers.epub', book, {})
