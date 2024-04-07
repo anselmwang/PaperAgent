@@ -90,7 +90,7 @@ def fetch_html_content(url, retries=3, sleep_time=5):
 
     return None
 
-def extract_papers(date):
+def extract_papers(date, verbose=False):
     # Construct the URL
     url = f"https://papers.cool/arxiv/cs.CV?date={date}&show=10000"
 
@@ -116,7 +116,8 @@ def extract_papers(date):
         paper_obj = extract_paper_details(paper_div, date)
         paper_obj.kimi_html_response = get_kimi_content(paper_obj.link)
         papers.append(paper_obj)
-        print(f"Extracted {i+1} of {total_papers} papers")
+        if verbose:
+            print(f"Extracted {i+1} of {total_papers} papers")
 
     # Verify the number of extracted papers
     assert len(papers) == total_papers, f"Extracted papers ({len(papers)}) does not match total reported ({total_papers})"

@@ -38,13 +38,12 @@ def main(task_name, start_date, end_date):
 
     all_paper_dict = {}
     total_days = (end_date - start_date).days + 1
-    with tqdm(total=total_days, desc="Processing days") as pbar:
-        while current_date <= end_date:
+    while current_date <= end_date:
         date_str = current_date.strftime('%Y-%m-%d')
+        print(f"Retrieving papers for {date_str} ({total_days - (end_date - current_date).days}/{total_days})")
         papers = retrieve_papers(task_name, date_str)
         all_paper_dict[date_str] = papers
         current_date += datetime.timedelta(days=1)
-            pbar.update(1)
 
     book = epub.EpubBook()
     book.set_title('Arxiv Papers')
