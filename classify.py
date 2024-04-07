@@ -24,7 +24,9 @@ The paper is represented in json dict as below.
 ```
 """
 
-    def __init__(self, criteria: str):
+    def __init__(self, criteria_file: str):
+        with open(criteria_file, 'r') as file:
+            self.criteria = file.read()
         pass
 
     def match(self, paper: Paper):
@@ -61,4 +63,3 @@ for paper_dict in tqdm(papers, desc="Classifying papers"):
 with jsonlines.open('data/2024-04-03.classified.jsonl', mode='w') as writer:
     for paper_dict in papers:
         writer.write(dataclasses.asdict(paper_dict))
-
