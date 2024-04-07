@@ -40,12 +40,18 @@ The paper is represented in json dict as below.
             'stream': False,
             "format": "json"
         }
-        response = requests.post(url, headers=headers, data=json.dumps(payload))
-        clean_response = response.json()["message"]["content"]
-        try:
-            response_data = json.loads(clean_response)
-        except json.JSONDecodeError:
-            raise ValueError(f"Failed to decode response: {clean_response}")
+        for attempt in range(3):
+            try:
+                response = requests.post(url, headers=headers, data=json.dumps(payload))
+                response.raise_for_status()  # Will raise an HTTPError if the HTTP request returned an unsuccessful status code
+                clean_response = response.json()["message"]["content"]
+                response_data = json.loads(clean_response)
+                break  # Exit the loop if the request was successful and the response was properly decoded
+            except (requests.exceptions.RequestException, json.JSONDecodeError) as e:
+                if attempt < 2:  # Only sleep and retry if we are not on the last attempt
+                    time.sleep(2 ** attempt)  # Exponential backoff
+                else:
+                    raise  # Re-raise the exception if all attempts fail
         return Response(score=response_data['score'], short_reason=response_data['short_reason'])
 
 
