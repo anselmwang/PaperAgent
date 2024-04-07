@@ -1,3 +1,4 @@
+import os
 import requests
 import dataclasses
 import copy
@@ -51,7 +52,7 @@ The paper is represented in json dict as below.
 
 def classify_papers(task, date):
     matcher = Matcher(task)
-    classified_papers_path = f'data/tasks/{task}/{date}.classified.jsonl'
+    classified_papers_path = f'data/tasks/{task}/{date}.jsonl'
     if os.path.exists(classified_papers_path):
         with jsonlines.open(classified_papers_path, mode='r') as reader:
             papers = [Paper(**{**obj, 'relevance': Response(**obj['relevance'])}) for obj in reader]
@@ -63,8 +64,6 @@ def classify_papers(task, date):
         with jsonlines.open(classified_papers_path, mode='w') as writer:
             for paper_obj in papers:
                 writer.write(dataclasses.asdict(paper_obj))
-
-
     
     return papers
 
