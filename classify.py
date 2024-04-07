@@ -24,10 +24,9 @@ The paper is represented in json dict as below.
 ```
 """
 
-    def __init__(self, criteria_file: str):
-        with open(criteria_file, 'r') as file:
+    def __init__(self, task: str):
+        with open(f"tasks/{task}.criteria.txt", 'r') as file:
             self.criteria = file.read()
-        pass
 
     def match(self, paper: Paper):
         paper_copy = copy.copy(paper)
@@ -35,31 +34,35 @@ The paper is represented in json dict as below.
         paper_dict = dataclasses.asdict(paper_copy)
         del paper_dict["kimi_html_response"]
 
-def send_chat_message(paper: dict):
+        message = self.TEMPLATE % {"criteria": self.criteria, "paper": json.dumps(paper_dict)}
 
+        url = 'http://localhost:11434/api/chat'
+        headers = {'Content-Type': 'application/json'}
+        payload = {
+            'model': "mistral",
+            'messages': [{"role": "user", "content": message}],
+            'stream': False,
+            "format": "json"
+        }
+        response = requests.post(url, headers=headers, data=json.dumps(payload))
+        clean_response = response.json()["message"]["content"]
+        response_data = json.loads(clean_response)
+        return Response(score=response_data['score'], short_reason=response_data['short_reason'])
 
-    message = TEMPLATE % json.dumps(paper)
+def classify_papers(task, date):
+    matcher = Matcher(task)
+    papers = paper.get_papers(date)
 
-    url = 'http://localhost:11434/api/chat'
-    headers = {'Content-Type': 'application/json'}
-    payload = {
-        'model': "mistral",
-        'messages': [{"role": "user", "content": message}],
-        'stream': False,
-        "format": "json"
-    }
-    response = requests.post(url, headers=headers, data=json.dumps(payload))
-    clean_response = response.json()["message"]["content"]
-    response_data = json.loads(clean_response)
-    return Response(score=response_data['score'], short_reason=response_data['short_reason'])
+    for paper_obj in tqdm(papers, desc="Classifying papers"):
+        response = matcher.match(paper_obj)
+        paper_obj.relevance = response
 
-papers = paper.get_papers("2024-04-03")
+    with jsonlines.open(f'data/tasks/{task}/{date}.jsonl', mode='w') as writer:
+        for paper_obj in papers:
+            writer.write(dataclasses.asdict(paper_obj))
+    
+    return papers
 
-for paper_dict in tqdm(papers, desc="Classifying papers"):
-    paper_obj = Paper(**paper_dict)
-    response = send_chat_message(paper_obj)
-    paper_obj.relevance = response
-
-with jsonlines.open('data/2024-04-03.classified.jsonl', mode='w') as writer:
-    for paper_dict in papers:
-        writer.write(dataclasses.asdict(paper_dict))
+task = "mllm_training"
+date = "2024-04-03"
+classify_papers(task, date)
