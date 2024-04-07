@@ -73,9 +73,11 @@ def main(task_name, start_date, end_date):
             score_toc = []
 
             # Sort papers by title for each score
-            for paper in sorted(score_groups[score], key=lambda p: p.title):
+            for paper_index, paper in enumerate(sorted(score_groups[score], key=lambda p: p.title)):
                 # Create a chapter for each paper
-                chapter = epub.EpubHtml(title=paper.title, file_name=f'{paper.title}.xhtml', lang='en')
+                sanitized_title = re.sub(r'[^\w\s-]', '', paper.title).replace(' ', '_')
+                chapter_file_name = f'{date}_{score}_{sanitized_title}_{paper_index}.xhtml'
+                chapter = epub.EpubHtml(title=paper.title, file_name=chapter_file_name, lang='en')
                 chapter.content = f'<h2><a href="{paper.link}">{paper.title}</a></h2>'
                 chapter.content += f'<p>Authors: {paper.authors}</p>'
                 chapter.content += f'<p>Score: {paper.relevance.score}</p>'
@@ -84,7 +86,7 @@ def main(task_name, start_date, end_date):
                 chapter.content += f'<p>Abstract: {paper.abstract}</p>'
                 book.add_item(chapter)
                 book.spine.append(chapter)
-                score_toc.append(epub.Link(f'{paper.title}.xhtml', paper.title, f'score_{score}_{paper.title}'))
+                score_toc.append(epub.Link(chapter_file_name, paper.title, f'score_{score}_{sanitized_title}_{paper_index}'))
             date_toc.append((score_section, tuple(score_toc)))
         book.toc.append((epub.Link(f'{date}.xhtml', date, f'date_{date}'), tuple(date_toc)))
 
