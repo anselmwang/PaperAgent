@@ -49,8 +49,6 @@ def extract_paper_details(paper_div, date):
     authors = ' ; '.join([author.get_text(strip=True) for author in paper_div.find('p', class_='authors').find_all('span', class_='author')])
     abstract = paper_div.find('p', class_='summary').get_text(strip=True)
     return Paper(date=date, title=title, link=link, authors=authors, abstract=abstract)
-        Paper(date=date, title=title, link=link, authors=authors, abstract=abstract)
-    }
 
 def get_kimi_content(url, retries=3, sleep_time=5):
     "fetch the content of the paper from the constructed URL with retry and sleep"
@@ -94,7 +92,7 @@ def fetch_html_content(url, retries=3, sleep_time=5):
 
 def extract_papers(date):
     # Construct the URL
-    url = f"https://papers.cool/arxiv/cs.CV?date={date}&show=300"
+    url = f"https://papers.cool/arxiv/cs.CV?date={date}&show=10000"
 
     # Fetch the HTML content
     html_content = fetch_html_content(url)

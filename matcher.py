@@ -50,7 +50,7 @@ The paper is represented in json dict as below.
         response_data = json.loads(clean_response)
         return Response(score=response_data['score'], short_reason=response_data['short_reason'])
 
-def classify_papers(task, date):
+def retrieve_papers(task, date):
     matcher = Matcher(task)
     task_folder_path = f'data/tasks/{task}'
     if not os.path.exists(task_folder_path):
@@ -71,6 +71,8 @@ def classify_papers(task, date):
     
     return papers
 
-task = "mllm_training"
-date = "2024-04-03"
-classify_papers(task, date)
+if __name__ == "__main__":
+    task = "mllm_training"
+    date = "2024-04-03"
+    papers = retrieve_papers(task, date)
+    print(papers[0])
