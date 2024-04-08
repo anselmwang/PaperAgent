@@ -42,7 +42,7 @@ def main(task_name, start_date, end_date):
         date_str = current_date.strftime('%Y-%m-%d')
         print(f"Retrieving papers for {date_str} ({total_days - (end_date - current_date).days}/{total_days})")
         papers = retrieve_papers(task_name, date_str)
-        all_paper_dict[date_str] = papers
+        all_paper_dict[date_str] = [p for p in papers if p.relevance.score >= min_score]
         current_date += datetime.timedelta(days=1)
 
     book = epub.EpubBook()
@@ -109,6 +109,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Augment paper objects with relevance field.')
     parser.add_argument('--task_name', type=str, default="mllm_training", help='Name of the task for relevance augmentation.')
     parser.add_argument('--days', type=int, help='Number of days to scrape.', required=False)
+    parser.add_argument('--min_score', type=int, default=0, help='Minimum relevance score for papers to be included in the epub.')
     args = parser.parse_args()
     if args.days:
         end_date = datetime.date.today() - datetime.timedelta(days=2)
@@ -117,4 +118,4 @@ if __name__ == "__main__":
         start_date = datetime.date(2024, 1, 1)
         end_date = datetime.date.today() - datetime.timedelta(days=2)
 
-    main(args.task_name, start_date, end_date)
+    main(args.task_name, start_date, end_date, args.min_score)
