@@ -6,7 +6,6 @@ import os
 import paper
 import dataclasses
 import jsonlines
-import ebooklib
 from ebooklib import epub
 from bs4 import BeautifulSoup
 from tqdm import tqdm
@@ -33,7 +32,7 @@ def retrieve_papers(task, date):
     
     return papers
 
-def main(task_name, start_date, end_date):
+def main(task_name, start_date, end_date, min_score):
     current_date = start_date
 
     all_paper_dict = {}
@@ -107,9 +106,9 @@ def main(task_name, start_date, end_date):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Augment paper objects with relevance field.')
-    parser.add_argument('--task_name', type=str, default="mllm_training", help='Name of the task for relevance augmentation.')
+    parser.add_argument('--task_name', type=str, default="mllm_for_understanding_training", help='Name of the task for relevance augmentation.')
     parser.add_argument('--days', type=int, help='Number of days to scrape.', required=False)
-    parser.add_argument('--min_score', type=int, default=0, help='Minimum relevance score for papers to be included in the epub.')
+    parser.add_argument('--min_score', type=int, default=5, help='Minimum relevance score for papers to be included in the epub.')
     args = parser.parse_args()
     if args.days:
         end_date = datetime.date.today() - datetime.timedelta(days=2)

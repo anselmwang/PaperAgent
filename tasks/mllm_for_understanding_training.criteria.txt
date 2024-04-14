@@ -1,0 +1,3 @@
+1. The paper should focus on training Multimodal Large Language Models (LLMs). Training refers to pretraining, fine-tuning, or training from scratch. The paper must focus on the training process, not the application of the model.
+2. The modalities can only be vision, video, and image, not speech or others.
+3. The paper should focus on multimodal LLM that being used to understand vision, video or images, not model used to generate images or video. There is only one exception: if the paper is talking about generating synthesis images or videos to further train a multimodal LLM for understanding, then the paper is still relevant.
