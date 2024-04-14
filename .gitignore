@@ -2,5 +2,5 @@ Computer Vision and Pattern Recognition _ Cool Papers - Immersive Paper Discover
 venv/
 .aider*
 __pycache__/*
-data/cool_papers_dump/
 data/tasks/
+papers.epub
